@@ -20,13 +20,14 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import java.io.File
+import java.io.FileOutputStream
 
 class ProductoFormActivity : ComponentActivity() {
 
     private lateinit var imgPreview: ImageView
     private var fotoUri: Uri? = null
     private var fotoFile: File? = null
-    private var imagenUri: Uri? = null
+    private var imagenPathGuardada: String? = null
 
     // 1. Lanzador para tomar la foto
     private val tomarFotoLauncher = registerForActivityResult(
@@ -35,7 +36,7 @@ class ProductoFormActivity : ComponentActivity() {
         if (success) {
             fotoUri?.let {
                 imgPreview.setImageURI(it)
-                imagenUri = it
+                imagenPathGuardada = fotoFile?.absolutePath
             }
         }
     }
@@ -70,8 +71,13 @@ class ProductoFormActivity : ComponentActivity() {
         // Seleccionar de galería
         val seleccionarImagen = registerForActivityResult(ActivityResultContracts.GetContent()) { uri ->
             uri?.let {
-                imagenUri = it
-                imgPreview.setImageURI(it)
+                val archivoInterno = copiarImagenAGuardadoInterno(it)
+                if (archivoInterno != null) {
+                    imagenPathGuardada = archivoInterno.absolutePath
+                    imgPreview.setImageURI(Uri.fromFile(archivoInterno))
+                } else {
+                    Toast.makeText(this, "No se pudo guardar la imagen seleccionada", Toast.LENGTH_SHORT).show()
+                }
             }
         }
 
@@ -92,8 +98,7 @@ class ProductoFormActivity : ComponentActivity() {
             val codigo = etCodigo.text.toString()
             val precio = etPrecio.text.toString().toDoubleOrNull() ?: 0.0
 
-            // Usamos la ruta del archivo si existe, sino la del URI de galería
-            val rutaFinal = fotoFile?.absolutePath ?: imagenUri?.toString()
+            val rutaFinal = imagenPathGuardada
 
             lifecycleScope.launch {
                 withContext(Dispatchers.IO) {
@@ -127,5 +132,21 @@ class ProductoFormActivity : ComponentActivity() {
     private fun crearArchivoImagen(): File {
         val nombre = "foto_${System.currentTimeMillis()}.jpg"
         return File(filesDir, nombre)
+    }
+
+    private fun copiarImagenAGuardadoInterno(uriOrigen: Uri): File? {
+        return try {
+            val archivoDestino = File(filesDir, "img_${System.currentTimeMillis()}.jpg")
+
+            contentResolver.openInputStream(uriOrigen)?.use { input ->
+                FileOutputStream(archivoDestino).use { output ->
+                    input.copyTo(output)
+                }
+            } ?: return null
+
+            archivoDestino
+        } catch (_: Exception) {
+            null
+        }
     }
 }
