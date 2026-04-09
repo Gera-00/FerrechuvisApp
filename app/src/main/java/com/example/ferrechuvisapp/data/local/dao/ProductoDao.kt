@@ -12,6 +12,9 @@ interface ProductoDao {
     @Query("SELECT * FROM productos")
     fun getAll(): List<Producto>
 
+    @Query("SELECT * FROM productos WHERE id = :id LIMIT 1")
+    fun getById(id: Int): Producto?
+
     @Query("""
         SELECT * FROM productos
         WHERE nombre LIKE '%' || :query || '%'

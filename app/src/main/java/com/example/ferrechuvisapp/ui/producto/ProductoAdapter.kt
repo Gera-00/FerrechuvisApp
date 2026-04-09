@@ -9,10 +9,12 @@ import androidx.recyclerview.widget.RecyclerView
 import com.example.ferrechuvisapp.R
 import com.example.ferrechuvisapp.data.local.entity.Producto
 import com.bumptech.glide.Glide
+import android.net.Uri
 import java.io.File
 
 class ProductoAdapter(
-    private var lista: List<Producto>
+    private var lista: List<Producto>,
+    private val onItemClick: (Producto) -> Unit
 ) : RecyclerView.Adapter<ProductoAdapter.ViewHolder>() {
 
     class ViewHolder(view: View) : RecyclerView.ViewHolder(view){
@@ -37,13 +39,19 @@ class ProductoAdapter(
         holder.codigo.text = producto.codigo
         holder.precio.text = String.format("$%.2f", producto.precio)
 
+        holder.itemView.setOnClickListener {
+            onItemClick(producto)
+        }
+
         if (producto.imagenPath != null) {
-            /*Glide.with(holder.itemView.context)
-                .load(File(producto.imagenPath))
-                .centerCrop()
-                .into(holder.imagen)*/
+            val modeloImagen = if (producto.imagenPath.startsWith("content://")) {
+                Uri.parse(producto.imagenPath)
+            } else {
+                File(producto.imagenPath)
+            }
+
             Glide.with(holder.itemView.context)
-                .load(File(producto.imagenPath))
+                .load(modeloImagen)
                 .into(holder.imagen)
         } else {
             holder.imagen.setImageResource(android.R.drawable.ic_menu_gallery)

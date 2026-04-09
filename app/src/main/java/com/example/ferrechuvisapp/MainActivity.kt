@@ -34,7 +34,11 @@ class MainActivity : ComponentActivity() {
         db = AppDatabase.getDatabase(this)
         productoDao = db.productoDao()
 
-        adapter = ProductoAdapter(emptyList())
+        adapter = ProductoAdapter(emptyList()) { producto ->
+            val intent = Intent(this, ProductoFormActivity::class.java)
+            intent.putExtra(ProductoFormActivity.EXTRA_PRODUCT_ID, producto.id)
+            startActivity(intent)
+        }
 
         val recycler = findViewById<RecyclerView>(R.id.recyclerProductos)
         recycler.layoutManager = GridLayoutManager(this,2)

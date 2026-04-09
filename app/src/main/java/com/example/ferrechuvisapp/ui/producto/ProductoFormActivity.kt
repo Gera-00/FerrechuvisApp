@@ -10,6 +10,7 @@ import android.widget.ImageView
 import android.widget.Toast
 import androidx.activity.ComponentActivity
 import androidx.activity.result.contract.ActivityResultContracts
+import com.bumptech.glide.Glide
 import androidx.core.content.ContextCompat
 import androidx.core.content.FileProvider
 import androidx.lifecycle.lifecycleScope
@@ -24,10 +25,16 @@ import java.io.FileOutputStream
 
 class ProductoFormActivity : ComponentActivity() {
 
+    companion object {
+        const val EXTRA_PRODUCT_ID = "extra_product_id"
+    }
+
     private lateinit var imgPreview: ImageView
     private var fotoUri: Uri? = null
     private var fotoFile: File? = null
     private var imagenPathGuardada: String? = null
+    private var productoIdEnEdicion: Int? = null
+    private var categoriaIdActual: Int = 1
 
     // 1. Lanzador para tomar la foto
     private val tomarFotoLauncher = registerForActivityResult(
@@ -68,6 +75,38 @@ class ProductoFormActivity : ComponentActivity() {
         val etCodigo = findViewById<EditText>(R.id.etCodigo)
         val etPrecio = findViewById<EditText>(R.id.etPrecio)
 
+        val idRecibido = intent.getIntExtra(EXTRA_PRODUCT_ID, -1)
+        if (idRecibido != -1) {
+            productoIdEnEdicion = idRecibido
+            btnGuardar.text = "Actualizar producto"
+
+            lifecycleScope.launch {
+                val producto = withContext(Dispatchers.IO) {
+                    productoDao.getById(idRecibido)
+                }
+
+                producto?.let {
+                    etNombre.setText(it.nombre)
+                    etCodigo.setText(it.codigo)
+                    etPrecio.setText(it.precio.toString())
+                    categoriaIdActual = it.categoriaId
+                    imagenPathGuardada = it.imagenPath
+
+                    it.imagenPath?.let { ruta ->
+                        val modeloImagen = if (ruta.startsWith("content://")) {
+                            Uri.parse(ruta)
+                        } else {
+                            File(ruta)
+                        }
+
+                        Glide.with(this@ProductoFormActivity)
+                            .load(modeloImagen)
+                            .into(imgPreview)
+                    }
+                }
+            }
+        }
+
         // Seleccionar de galería
         val seleccionarImagen = registerForActivityResult(ActivityResultContracts.GetContent()) { uri ->
             uri?.let {
@@ -102,15 +141,20 @@ class ProductoFormActivity : ComponentActivity() {
 
             lifecycleScope.launch {
                 withContext(Dispatchers.IO) {
-                    productoDao.insert(
-                        Producto(
-                            nombre = nombre,
-                            codigo = codigo,
-                            precio = precio,
-                            categoriaId = 1,
-                            imagenPath = rutaFinal
-                        )
+                    val productoAGuardar = Producto(
+                        id = productoIdEnEdicion ?: 0,
+                        nombre = nombre,
+                        codigo = codigo,
+                        precio = precio,
+                        categoriaId = categoriaIdActual,
+                        imagenPath = rutaFinal
                     )
+
+                    if (productoIdEnEdicion == null) {
+                        productoDao.insert(productoAGuardar)
+                    } else {
+                        productoDao.update(productoAGuardar)
+                    }
                 }
                 finish()
             }
