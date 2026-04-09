@@ -1,9 +1,11 @@
 package com.example.ferrechuvisapp.ui.producto
 
 import android.Manifest
+import android.app.AlertDialog
 import android.content.pm.PackageManager
 import android.net.Uri
 import android.os.Bundle
+import android.view.View
 import android.widget.Button
 import android.widget.EditText
 import android.widget.ImageView
@@ -34,6 +36,7 @@ class ProductoFormActivity : ComponentActivity() {
     private var fotoFile: File? = null
     private var imagenPathGuardada: String? = null
     private var productoIdEnEdicion: Int? = null
+    private var productoEnEdicion: Producto? = null
     private var categoriaIdActual: Int = 1
 
     // 1. Lanzador para tomar la foto
@@ -70,6 +73,7 @@ class ProductoFormActivity : ComponentActivity() {
         val btnImagen = findViewById<Button>(R.id.btnImagen)
         val btnCamara = findViewById<Button>(R.id.btnCamara)
         val btnGuardar = findViewById<Button>(R.id.btnGuardar)
+        val btnEliminar = findViewById<Button>(R.id.btnEliminar)
 
         val etNombre = findViewById<EditText>(R.id.etNombre)
         val etCodigo = findViewById<EditText>(R.id.etCodigo)
@@ -79,6 +83,7 @@ class ProductoFormActivity : ComponentActivity() {
         if (idRecibido != -1) {
             productoIdEnEdicion = idRecibido
             btnGuardar.text = "Actualizar producto"
+            btnEliminar.visibility = View.VISIBLE
 
             lifecycleScope.launch {
                 val producto = withContext(Dispatchers.IO) {
@@ -86,6 +91,7 @@ class ProductoFormActivity : ComponentActivity() {
                 }
 
                 producto?.let {
+                    productoEnEdicion = it
                     etNombre.setText(it.nombre)
                     etCodigo.setText(it.codigo)
                     etPrecio.setText(it.precio.toString())
@@ -105,6 +111,31 @@ class ProductoFormActivity : ComponentActivity() {
                     }
                 }
             }
+        }
+
+        btnEliminar.setOnClickListener {
+            val productoActual = productoEnEdicion
+            if (productoActual == null) {
+                Toast.makeText(this, "No se pudo cargar el producto", Toast.LENGTH_SHORT).show()
+                return@setOnClickListener
+            }
+
+            AlertDialog.Builder(this)
+                .setTitle("Eliminar producto")
+                .setMessage("¿Deseas eliminar este producto? Esta acción no se puede deshacer.")
+                .setNegativeButton("Cancelar", null)
+                .setPositiveButton("Eliminar") { _, _ ->
+                    lifecycleScope.launch {
+                        withContext(Dispatchers.IO) {
+                            productoDao.delete(productoActual)
+                            eliminarArchivoLocalSiAplica(productoActual.imagenPath)
+                        }
+
+                        Toast.makeText(this@ProductoFormActivity, "Producto eliminado", Toast.LENGTH_SHORT).show()
+                        finish()
+                    }
+                }
+                .show()
         }
 
         // Seleccionar de galería
@@ -153,7 +184,12 @@ class ProductoFormActivity : ComponentActivity() {
                     if (productoIdEnEdicion == null) {
                         productoDao.insert(productoAGuardar)
                     } else {
+                        val rutaAnterior = productoEnEdicion?.imagenPath
                         productoDao.update(productoAGuardar)
+
+                        if (rutaAnterior != rutaFinal) {
+                            eliminarArchivoLocalSiAplica(rutaAnterior)
+                        }
                     }
                 }
                 finish()
@@ -191,6 +227,20 @@ class ProductoFormActivity : ComponentActivity() {
             archivoDestino
         } catch (_: Exception) {
             null
+        }
+    }
+
+    private fun eliminarArchivoLocalSiAplica(ruta: String?) {
+        if (ruta.isNullOrBlank() || ruta.startsWith("content://")) {
+            return
+        }
+
+        try {
+            val archivo = File(ruta)
+            if (archivo.exists()) {
+                archivo.delete()
+            }
+        } catch (_: Exception) {
         }
     }
 }
