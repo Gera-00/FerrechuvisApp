@@ -8,8 +8,10 @@ import android.widget.PopupMenu
 import androidx.activity.ComponentActivity
 import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.RecyclerView
+import com.example.ferrechuvisapp.data.local.dao.CategoriaDao
 import com.example.ferrechuvisapp.data.local.dao.ProductoDao
 import com.example.ferrechuvisapp.data.local.database.AppDatabase
+import com.example.ferrechuvisapp.data.local.entity.Categoria
 import com.example.ferrechuvisapp.ui.producto.ProductoAdapter
 import kotlinx.coroutines.launch
 
@@ -22,6 +24,7 @@ import com.example.ferrechuvisapp.ui.producto.ProductoFormActivity
 
 class MainActivity : ComponentActivity() {
     lateinit var db: AppDatabase
+    lateinit var categoriaDao: CategoriaDao
     lateinit var productoDao: ProductoDao
     lateinit var adapter: ProductoAdapter
 
@@ -32,6 +35,7 @@ class MainActivity : ComponentActivity() {
         setContentView(R.layout.activity_main)
 
         db = AppDatabase.getDatabase(this)
+        categoriaDao = db.categoriaDao()
         productoDao = db.productoDao()
 
         adapter = ProductoAdapter(emptyList()) { producto ->
@@ -43,21 +47,6 @@ class MainActivity : ComponentActivity() {
         val recycler = findViewById<RecyclerView>(R.id.recyclerProductos)
         recycler.layoutManager = GridLayoutManager(this,2)
         recycler.adapter = adapter
-
-        //Este insert fue de prueba para insertar una tupla en la tabla Productos y probar layout
-        /*lifecycleScope.launch {
-            withContext(Dispatchers.IO) {
-                productoDao.insert(
-                    Producto(
-                        nombre = "Martillo",
-                        codigo = "MT001",
-                        precio = 120.0,
-                        categoriaId = 1,
-                        imagenPath = null
-                    )
-                )
-            }
-        }*/
 
         val btnMenu = findViewById<ImageButton>(R.id.btnMenu)
         btnMenu.setOnClickListener { view ->

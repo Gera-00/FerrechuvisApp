@@ -6,9 +6,12 @@ import android.content.pm.PackageManager
 import android.net.Uri
 import android.os.Bundle
 import android.view.View
+import android.widget.AdapterView
+import android.widget.ArrayAdapter
 import android.widget.Button
 import android.widget.EditText
 import android.widget.ImageView
+import android.widget.Spinner
 import android.widget.Toast
 import androidx.activity.ComponentActivity
 import androidx.activity.result.contract.ActivityResultContracts
@@ -17,7 +20,9 @@ import androidx.core.content.ContextCompat
 import androidx.core.content.FileProvider
 import androidx.lifecycle.lifecycleScope
 import com.example.ferrechuvisapp.R
+import com.example.ferrechuvisapp.data.local.dao.CategoriaDao
 import com.example.ferrechuvisapp.data.local.database.AppDatabase
+import com.example.ferrechuvisapp.data.local.entity.Categoria
 import com.example.ferrechuvisapp.data.local.entity.Producto
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -37,7 +42,10 @@ class ProductoFormActivity : ComponentActivity() {
     private var imagenPathGuardada: String? = null
     private var productoIdEnEdicion: Int? = null
     private var productoEnEdicion: Producto? = null
-    private var categoriaIdActual: Int = 1
+    private var categoriaIdActual: Int = 0
+    private lateinit var categoriaDao: CategoriaDao
+    private lateinit var spCategoria: Spinner
+    private var categoriasDisponibles: List<Categoria> = emptyList()
 
     // 1. Lanzador para tomar la foto
     private val tomarFotoLauncher = registerForActivityResult(
@@ -67,9 +75,11 @@ class ProductoFormActivity : ComponentActivity() {
         setContentView(R.layout.activity_producto_form)
 
         val db = AppDatabase.getDatabase(this)
+        categoriaDao = db.categoriaDao()
         val productoDao = db.productoDao()
 
         imgPreview = findViewById(R.id.imgPreview)
+        spCategoria = findViewById(R.id.spCategoria)
         val btnImagen = findViewById<Button>(R.id.btnImagen)
         val btnCamara = findViewById<Button>(R.id.btnCamara)
         val btnGuardar = findViewById<Button>(R.id.btnGuardar)
@@ -84,8 +94,33 @@ class ProductoFormActivity : ComponentActivity() {
             productoIdEnEdicion = idRecibido
             btnGuardar.text = "Actualizar producto"
             btnEliminar.visibility = View.VISIBLE
+        }
 
-            lifecycleScope.launch {
+        spCategoria.onItemSelectedListener = object : AdapterView.OnItemSelectedListener {
+            override fun onItemSelected(parent: AdapterView<*>?, view: android.view.View?, position: Int, id: Long) {
+                if (position == 0) {
+                    categoriaIdActual = 0
+                    return
+                }
+
+                categoriasDisponibles.getOrNull(position - 1)?.let { categoriaSeleccionada ->
+                    categoriaIdActual = categoriaSeleccionada.id
+                }
+            }
+
+            override fun onNothingSelected(parent: AdapterView<*>?) {
+            }
+        }
+
+        lifecycleScope.launch {
+            asegurarCategoriasDePruebaSiHaceFalta()
+            categoriasDisponibles = withContext(Dispatchers.IO) {
+                categoriaDao.getAll()
+            }
+
+            configurarSpinnerCategorias()
+
+            if (idRecibido != -1) {
                 val producto = withContext(Dispatchers.IO) {
                     productoDao.getById(idRecibido)
                 }
@@ -97,6 +132,7 @@ class ProductoFormActivity : ComponentActivity() {
                     etPrecio.setText(it.precio.toString())
                     categoriaIdActual = it.categoriaId
                     imagenPathGuardada = it.imagenPath
+                    seleccionarCategoriaPorId(it.categoriaId)
 
                     it.imagenPath?.let { ruta ->
                         val modeloImagen = if (ruta.startsWith("content://")) {
@@ -168,6 +204,11 @@ class ProductoFormActivity : ComponentActivity() {
             val codigo = etCodigo.text.toString()
             val precio = etPrecio.text.toString().toDoubleOrNull() ?: 0.0
 
+            if (categoriaIdActual == 0) {
+                Toast.makeText(this, "Selecciona una categoría", Toast.LENGTH_SHORT).show()
+                return@setOnClickListener
+            }
+
             val rutaFinal = imagenPathGuardada
 
             lifecycleScope.launch {
@@ -212,6 +253,49 @@ class ProductoFormActivity : ComponentActivity() {
     private fun crearArchivoImagen(): File {
         val nombre = "foto_${System.currentTimeMillis()}.jpg"
         return File(filesDir, nombre)
+    }
+
+    private suspend fun asegurarCategoriasDePruebaSiHaceFalta() {
+        withContext(Dispatchers.IO) {
+            if (categoriaDao.getAll().isEmpty()) {
+                categoriaDao.insert(Categoria(nombre = "Herramientas"))
+                categoriaDao.insert(Categoria(nombre = "Electricidad"))
+                categoriaDao.insert(Categoria(nombre = "Pinturas"))
+                categoriaDao.insert(Categoria(nombre = "Plomeria"))
+                categoriaDao.insert(Categoria(nombre = "Ferreteria general"))
+            }
+        }
+    }
+
+    private fun configurarSpinnerCategorias() {
+        val nombresCategorias = buildList {
+            add("Selecciona una categoría")
+            addAll(categoriasDisponibles.map { it.nombre })
+        }
+        val adapter = ArrayAdapter(
+            this,
+            android.R.layout.simple_spinner_item,
+            nombresCategorias
+        ).also { spinnerAdapter ->
+            spinnerAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item)
+        }
+
+        spCategoria.adapter = adapter
+
+        if (productoIdEnEdicion == null) {
+            spCategoria.setSelection(0)
+            categoriaIdActual = 0
+        } else {
+            seleccionarCategoriaPorId(categoriaIdActual)
+        }
+    }
+
+    private fun seleccionarCategoriaPorId(categoriaId: Int) {
+        val indice = categoriasDisponibles.indexOfFirst { it.id == categoriaId }
+        if (indice >= 0 && spCategoria.adapter != null) {
+            spCategoria.setSelection(indice + 1)
+            categoriaIdActual = categoriasDisponibles[indice].id
+        }
     }
 
     private fun copiarImagenAGuardadoInterno(uriOrigen: Uri): File? {

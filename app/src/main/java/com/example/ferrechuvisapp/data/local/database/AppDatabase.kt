@@ -4,6 +4,7 @@ import android.content.Context
 import androidx.room.Database
 import androidx.room.Room
 import androidx.room.RoomDatabase
+import com.example.ferrechuvisapp.data.local.dao.CategoriaDao
 import com.example.ferrechuvisapp.data.local.dao.ProductoDao
 import com.example.ferrechuvisapp.data.local.entity.Categoria
 import com.example.ferrechuvisapp.data.local.entity.Producto
@@ -14,6 +15,7 @@ import com.example.ferrechuvisapp.data.local.entity.Producto
 )
 abstract class AppDatabase : RoomDatabase() {
     abstract fun  productoDao(): ProductoDao
+    abstract fun categoriaDao(): CategoriaDao
 
     companion object{
         @Volatile
