@@ -1,67 +1,99 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:tools="http://schemas.android.com/tools"
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
-    android:orientation="vertical"
-    android:layout_gravity="center_horizontal"
     android:layout_width="match_parent"
-    android:layout_height="match_parent">
+    android:layout_height="match_parent"
+    android:background="#1F1F2A">
 
-    <LinearLayout
+    <TextView
+        android:id="@+id/tvTitulo"
         android:layout_width="match_parent"
-        android:layout_height="68dp"
-        android:padding="10dp"
-        android:layout_gravity="center_horizontal"
-        android:background="#232322"
-        android:orientation="horizontal"
-        android:gravity="center_vertical"
-        >
-
-        <ImageButton
-            android:id="@+id/btnMenu"
-            android:layout_width="48dp"
-            android:layout_height="48dp"
-            android:contentDescription="Menú"
-            android:src="@drawable/ic_menu_blanco"
-            android:background="?android:attr/selectableItemBackground"
-            android:scaleType="centerInside"
-            android:layout_marginEnd="10dp"
-            />
-
-        <TextView
-            android:id="@+id/tvTitulo"
-            android:layout_width="0dp"
-            android:layout_height="wrap_content"
-            android:layout_weight="1"
-            android:text="TLAPALERÍA FERRECHUVIS"
-            android:textSize="22dp"
-            android:textStyle="bold"
-            android:textColor="#FF5500"
-            android:textAlignment="center"
-            />
-
-    </LinearLayout>
+        android:layout_height="wrap_content"
+        android:layout_marginTop="24dp"
+        android:gravity="center"
+        android:text="TLAPALERÍA&#10;FERRECHUVIS"
+        android:textColor="#FF8F1F"
+        android:textSize="34sp"
+        android:textStyle="bold"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent" />
 
     <LinearLayout
+        android:id="@+id/contenedorCatalogo"
+        android:layout_width="0dp"
+        android:layout_height="0dp"
+        android:layout_marginTop="18dp"
         android:orientation="vertical"
-        android:layout_gravity="center_horizontal"
-        android:padding="10dp"
-        android:layout_width="match_parent"
-        android:layout_height="match_parent">
+        android:background="@drawable/bg_catalogo_panel"
+        android:paddingStart="14dp"
+        android:paddingTop="12dp"
+        android:paddingEnd="14dp"
+        android:paddingBottom="0dp"
+        app:layout_constraintTop_toBottomOf="@id/tvTitulo"
+        app:layout_constraintBottom_toTopOf="@id/bottomBar"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent">
 
         <EditText
             android:id="@+id/etBuscar"
             android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:hint="Buscar"
-            android:layout_marginTop="10dp"
-            />
+            android:layout_height="40dp"
+            android:background="@drawable/bg_busqueda"
+            android:hint="Buscar productos"
+            android:inputType="text"
+            android:paddingStart="16dp"
+            android:paddingEnd="16dp"
+            android:textSize="14sp" />
 
         <androidx.recyclerview.widget.RecyclerView
             android:id="@+id/recyclerProductos"
             android:layout_width="match_parent"
-            android:layout_height="match_parent"
-            android:paddingTop="20dp"
-            />
+            android:layout_height="0dp"
+            android:layout_weight="1"
+            android:layout_marginTop="14dp"
+            android:clipToPadding="false"
+            android:paddingBottom="12dp" />
     </LinearLayout>
-</LinearLayout>
+
+    <LinearLayout
+        android:id="@+id/bottomBar"
+        android:layout_width="0dp"
+        android:layout_height="58dp"
+        android:orientation="vertical"
+        android:gravity="center"
+        android:background="#ECECEC"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent">
+
+        <ImageView
+            android:layout_width="22dp"
+            android:layout_height="22dp"
+            android:src="@drawable/ic_home"
+            app:tint="#9C9C9C"
+            android:contentDescription="Inicio" />
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Inicio"
+            android:textColor="#9C9C9C"
+            android:textSize="12sp" />
+    </LinearLayout>
+
+    <ImageButton
+        android:id="@+id/fabAgregarProducto"
+        android:layout_width="56dp"
+        android:layout_height="56dp"
+        android:layout_marginEnd="18dp"
+        android:layout_marginBottom="18dp"
+        android:background="@drawable/bg_boton_agregar"
+        android:contentDescription="Agregar producto"
+        android:scaleType="centerInside"
+        android:src="@android:drawable/ic_input_add"
+        android:tint="#FFFFFF"
+        app:layout_constraintBottom_toTopOf="@id/bottomBar"
+        app:layout_constraintEnd_toEndOf="parent" />
+
+</androidx.constraintlayout.widget.ConstraintLayout>

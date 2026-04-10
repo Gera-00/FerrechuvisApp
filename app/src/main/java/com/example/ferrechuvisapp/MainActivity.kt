@@ -2,29 +2,25 @@ package com.example.ferrechuvisapp
 
 import android.content.Intent
 import android.os.Bundle
-import android.widget.EditText
-import android.widget.ImageButton
-import android.widget.PopupMenu
-import androidx.activity.ComponentActivity
-import androidx.lifecycle.lifecycleScope
-import androidx.recyclerview.widget.RecyclerView
-import com.example.ferrechuvisapp.data.local.dao.CategoriaDao
-import com.example.ferrechuvisapp.data.local.dao.ProductoDao
-import com.example.ferrechuvisapp.data.local.database.AppDatabase
-import com.example.ferrechuvisapp.data.local.entity.Categoria
-import com.example.ferrechuvisapp.ui.producto.ProductoAdapter
-import kotlinx.coroutines.launch
-
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.withContext
 import android.text.Editable
 import android.text.TextWatcher
+import android.widget.EditText
+import android.widget.ImageButton
+import androidx.activity.ComponentActivity
+import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.GridLayoutManager
+import androidx.recyclerview.widget.RecyclerView
+import com.example.ferrechuvisapp.data.local.dao.ProductoDao
+import com.example.ferrechuvisapp.data.local.database.AppDatabase
+import com.example.ferrechuvisapp.ui.producto.ProductoAdapter
+import com.example.ferrechuvisapp.ui.producto.ProductoDetalleActivity
 import com.example.ferrechuvisapp.ui.producto.ProductoFormActivity
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 
 class MainActivity : ComponentActivity() {
     lateinit var db: AppDatabase
-    lateinit var categoriaDao: CategoriaDao
     lateinit var productoDao: ProductoDao
     lateinit var adapter: ProductoAdapter
 
@@ -35,12 +31,14 @@ class MainActivity : ComponentActivity() {
         setContentView(R.layout.activity_main)
 
         db = AppDatabase.getDatabase(this)
-        categoriaDao = db.categoriaDao()
         productoDao = db.productoDao()
 
         adapter = ProductoAdapter(emptyList()) { producto ->
-            val intent = Intent(this, ProductoFormActivity::class.java)
-            intent.putExtra(ProductoFormActivity.EXTRA_PRODUCT_ID, producto.id)
+            val intent = Intent(this, ProductoDetalleActivity::class.java).apply {
+                putExtra(ProductoDetalleActivity.EXTRA_NOMBRE, producto.nombre)
+                putExtra(ProductoDetalleActivity.EXTRA_PRECIO, producto.precio)
+                putExtra(ProductoDetalleActivity.EXTRA_IMAGEN_PATH, producto.imagenPath)
+            }
             startActivity(intent)
         }
 
@@ -48,24 +46,11 @@ class MainActivity : ComponentActivity() {
         recycler.layoutManager = GridLayoutManager(this,2)
         recycler.adapter = adapter
 
-        val btnMenu = findViewById<ImageButton>(R.id.btnMenu)
-        btnMenu.setOnClickListener { view ->
-            val popupMenu = PopupMenu(this, view)
-            popupMenu.menuInflater.inflate(R.menu.main_menu, popupMenu.menu)
-
-            popupMenu.setOnMenuItemClickListener { item ->
-                when (item.itemId) {
-                    R.id.action_agregar_producto -> {
-                        val intent = Intent(this, ProductoFormActivity::class.java)
-                        startActivity(intent)
-                        true
-                    }
-                    else -> false
-                }
+        findViewById<ImageButton>(R.id.fabAgregarProducto)
+            .setOnClickListener {
+                val intent = Intent(this, ProductoFormActivity::class.java)
+                startActivity(intent)
             }
-
-            popupMenu.show()
-        }
 
         etBuscar = findViewById(R.id.etBuscar)
 
