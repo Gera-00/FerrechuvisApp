@@ -35,6 +35,9 @@
             android:name=".ui.producto.ProductoDetalleActivity"
             android:exported="false" />
         <activity
+            android:name=".ui.categoria.CategoriaActivity"
+            android:exported="false" />
+        <activity
             android:name=".MainActivity"
             android:exported="true"
             android:label="@string/app_name"

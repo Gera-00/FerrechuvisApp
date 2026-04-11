@@ -7,13 +7,13 @@
 
     <FrameLayout
         android:layout_width="match_parent"
-        android:layout_height="120dp"
+        android:layout_height="200dp"
         android:background="@color/white">
 
         <ImageView
             android:id="@+id/imgDetalleProducto"
-            android:layout_width="220dp"
-            android:layout_height="110dp"
+            android:layout_width="match_parent"
+            android:layout_height="190dp"
             android:layout_gravity="center"
             android:adjustViewBounds="true"
             android:scaleType="fitCenter"
@@ -43,7 +43,7 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:orientation="vertical"
-            android:background="@drawable/bg_detalle_header"
+            android:background="@color/white"
             android:paddingStart="20dp"
             android:paddingTop="18dp"
             android:paddingEnd="20dp"
@@ -55,7 +55,7 @@
                 android:layout_height="wrap_content"
                 android:text="Nombre"
                 android:textColor="#111111"
-                android:textSize="40sp"
+                android:textSize="37sp"
                 android:textStyle="bold" />
 
             <TextView

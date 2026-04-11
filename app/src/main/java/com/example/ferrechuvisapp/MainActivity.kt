@@ -7,6 +7,7 @@ import android.text.Editable
 import android.text.TextWatcher
 import android.widget.EditText
 import android.widget.ImageButton
+import android.widget.PopupMenu
 import android.widget.Toast
 import androidx.activity.ComponentActivity
 import androidx.lifecycle.lifecycleScope
@@ -15,6 +16,7 @@ import androidx.recyclerview.widget.RecyclerView
 import com.example.ferrechuvisapp.data.local.entity.Producto
 import com.example.ferrechuvisapp.data.local.dao.ProductoDao
 import com.example.ferrechuvisapp.data.local.database.AppDatabase
+import com.example.ferrechuvisapp.ui.categoria.CategoriaActivity
 import com.example.ferrechuvisapp.ui.producto.ProductoAdapter
 import com.example.ferrechuvisapp.ui.producto.ProductoDetalleActivity
 import com.example.ferrechuvisapp.ui.producto.ProductoFormActivity
@@ -60,6 +62,22 @@ class MainActivity : ComponentActivity() {
             .setOnClickListener {
                 val intent = Intent(this, ProductoFormActivity::class.java)
                 startActivity(intent)
+            }
+
+        findViewById<ImageButton>(R.id.btnMenu)
+            .setOnClickListener { btnMenu ->
+                val popupMenu = PopupMenu(this, btnMenu)
+                popupMenu.menu.add("Categorías")
+                popupMenu.setOnMenuItemClickListener { menuItem ->
+                    if (menuItem.title == "Categorías") {
+                        val intent = Intent(this, CategoriaActivity::class.java)
+                        startActivity(intent)
+                        true
+                    } else {
+                        false
+                    }
+                }
+                popupMenu.show()
             }
 
         etBuscar = findViewById(R.id.etBuscar)
