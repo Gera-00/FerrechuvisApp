@@ -14,7 +14,8 @@ import java.io.File
 
 class ProductoAdapter(
     private var lista: List<Producto>,
-    private val onItemClick: (Producto) -> Unit
+    private val onItemClick: (Producto) -> Unit,
+    private val onItemLongClick: (Producto) -> Unit
 ) : RecyclerView.Adapter<ProductoAdapter.ViewHolder>() {
 
     class ViewHolder(view: View) : RecyclerView.ViewHolder(view){
@@ -41,6 +42,11 @@ class ProductoAdapter(
 
         holder.itemView.setOnClickListener {
             onItemClick(producto)
+        }
+
+        holder.itemView.setOnLongClickListener {
+            onItemLongClick(producto)
+            true
         }
 
         if (producto.imagenPath != null) {

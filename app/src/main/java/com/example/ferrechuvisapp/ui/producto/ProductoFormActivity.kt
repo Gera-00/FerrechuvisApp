@@ -1,17 +1,17 @@
 package com.example.ferrechuvisapp.ui.producto
 
 import android.Manifest
-import android.app.AlertDialog
 import android.content.pm.PackageManager
 import android.net.Uri
 import android.os.Bundle
-import android.view.View
 import android.widget.AdapterView
 import android.widget.ArrayAdapter
 import android.widget.Button
 import android.widget.EditText
 import android.widget.ImageView
+import android.widget.ImageButton
 import android.widget.Spinner
+import android.widget.TextView
 import android.widget.Toast
 import androidx.activity.ComponentActivity
 import androidx.activity.result.contract.ActivityResultContracts
@@ -83,7 +83,8 @@ class ProductoFormActivity : ComponentActivity() {
         val btnImagen = findViewById<Button>(R.id.btnImagen)
         val btnCamara = findViewById<Button>(R.id.btnCamara)
         val btnGuardar = findViewById<Button>(R.id.btnGuardar)
-        val btnEliminar = findViewById<Button>(R.id.btnEliminar)
+        val btnBack = findViewById<ImageButton>(R.id.btnBack)
+        val tvFormTitle = findViewById<TextView>(R.id.tvFormTitle)
 
         val etNombre = findViewById<EditText>(R.id.etNombre)
         val etCodigo = findViewById<EditText>(R.id.etCodigo)
@@ -93,8 +94,10 @@ class ProductoFormActivity : ComponentActivity() {
         if (idRecibido != -1) {
             productoIdEnEdicion = idRecibido
             btnGuardar.text = "Actualizar producto"
-            btnEliminar.visibility = View.VISIBLE
+            tvFormTitle.text = "Editar Producto"
         }
+
+        btnBack.setOnClickListener { finish() }
 
         spCategoria.onItemSelectedListener = object : AdapterView.OnItemSelectedListener {
             override fun onItemSelected(parent: AdapterView<*>?, view: android.view.View?, position: Int, id: Long) {
@@ -147,31 +150,6 @@ class ProductoFormActivity : ComponentActivity() {
                     }
                 }
             }
-        }
-
-        btnEliminar.setOnClickListener {
-            val productoActual = productoEnEdicion
-            if (productoActual == null) {
-                Toast.makeText(this, "No se pudo cargar el producto", Toast.LENGTH_SHORT).show()
-                return@setOnClickListener
-            }
-
-            AlertDialog.Builder(this)
-                .setTitle("Eliminar producto")
-                .setMessage("¿Deseas eliminar este producto? Esta acción no se puede deshacer.")
-                .setNegativeButton("Cancelar", null)
-                .setPositiveButton("Eliminar") { _, _ ->
-                    lifecycleScope.launch {
-                        withContext(Dispatchers.IO) {
-                            productoDao.delete(productoActual)
-                            eliminarArchivoLocalSiAplica(productoActual.imagenPath)
-                        }
-
-                        Toast.makeText(this@ProductoFormActivity, "Producto eliminado", Toast.LENGTH_SHORT).show()
-                        finish()
-                    }
-                }
-                .show()
         }
 
         // Seleccionar de galería
