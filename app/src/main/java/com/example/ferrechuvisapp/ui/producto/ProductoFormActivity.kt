@@ -24,6 +24,7 @@ import com.example.ferrechuvisapp.data.local.dao.CategoriaDao
 import com.example.ferrechuvisapp.data.local.database.AppDatabase
 import com.example.ferrechuvisapp.data.local.entity.Categoria
 import com.example.ferrechuvisapp.data.local.entity.Producto
+import com.example.ferrechuvisapp.ui.barcode.BarcodeScanContract
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
@@ -45,7 +46,15 @@ class ProductoFormActivity : ComponentActivity() {
     private var categoriaIdActual: Int = 0
     private lateinit var categoriaDao: CategoriaDao
     private lateinit var spCategoria: Spinner
+    private lateinit var etCodigo: EditText
     private var categoriasDisponibles: List<Categoria> = emptyList()
+
+    private val barcodeLauncher = registerForActivityResult(BarcodeScanContract()) { barcodeValue ->
+        if (!barcodeValue.isNullOrBlank()) {
+            etCodigo.setText(barcodeValue)
+            etCodigo.setSelection(barcodeValue.length)
+        }
+    }
 
     // 1. Lanzador para tomar la foto
     private val tomarFotoLauncher = registerForActivityResult(
@@ -87,8 +96,9 @@ class ProductoFormActivity : ComponentActivity() {
         val tvFormTitle = findViewById<TextView>(R.id.tvFormTitle)
 
         val etNombre = findViewById<EditText>(R.id.etNombre)
-        val etCodigo = findViewById<EditText>(R.id.etCodigo)
+        etCodigo = findViewById(R.id.etCodigo)
         val etPrecio = findViewById<EditText>(R.id.etPrecio)
+        val btnEscanearCodigo = findViewById<ImageButton>(R.id.btnEscanearCodigo)
 
         val idRecibido = intent.getIntExtra(EXTRA_PRODUCT_ID, -1)
         if (idRecibido != -1) {
@@ -98,6 +108,10 @@ class ProductoFormActivity : ComponentActivity() {
         }
 
         btnBack.setOnClickListener { finish() }
+
+        btnEscanearCodigo.setOnClickListener {
+            barcodeLauncher.launch(Unit)
+        }
 
         spCategoria.onItemSelectedListener = object : AdapterView.OnItemSelectedListener {
             override fun onItemSelected(parent: AdapterView<*>?, view: android.view.View?, position: Int, id: Long) {

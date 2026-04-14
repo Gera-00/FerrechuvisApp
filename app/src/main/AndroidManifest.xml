@@ -35,6 +35,9 @@
             android:name=".ui.producto.ProductoDetalleActivity"
             android:exported="false" />
         <activity
+            android:name=".ui.barcode.BarcodeScannerActivity"
+            android:exported="false" />
+        <activity
             android:name=".ui.categoria.CategoriaActivity"
             android:exported="false" />
         <activity

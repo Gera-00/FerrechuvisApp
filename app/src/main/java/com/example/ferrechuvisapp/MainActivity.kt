@@ -16,6 +16,7 @@ import androidx.recyclerview.widget.RecyclerView
 import com.example.ferrechuvisapp.data.local.entity.Producto
 import com.example.ferrechuvisapp.data.local.dao.ProductoDao
 import com.example.ferrechuvisapp.data.local.database.AppDatabase
+import com.example.ferrechuvisapp.ui.barcode.BarcodeScanContract
 import com.example.ferrechuvisapp.ui.categoria.CategoriaActivity
 import com.example.ferrechuvisapp.ui.producto.ProductoAdapter
 import com.example.ferrechuvisapp.ui.producto.ProductoDetalleActivity
@@ -27,10 +28,20 @@ import java.io.File
 
 class MainActivity : ComponentActivity() {
     lateinit var db: AppDatabase
+
     lateinit var productoDao: ProductoDao
     lateinit var adapter: ProductoAdapter
 
     lateinit var etBuscar: EditText
+
+    private val barcodeLauncher = registerForActivityResult(BarcodeScanContract()) { barcodeValue ->
+        if (!barcodeValue.isNullOrBlank()) {
+            val codigo = barcodeValue.trim()
+            etBuscar.setText(codigo)
+            etBuscar.setSelection(codigo.length)
+            cargarProductosSegunBusqueda(codigo)
+        }
+    }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -82,22 +93,14 @@ class MainActivity : ComponentActivity() {
 
         etBuscar = findViewById(R.id.etBuscar)
 
+        findViewById<ImageButton>(R.id.btnCodigoBarras)
+            .setOnClickListener {
+                barcodeLauncher.launch(Unit)
+            }
+
         etBuscar.addTextChangedListener(object : TextWatcher {
             override fun afterTextChanged(s: Editable?) {
-
-                val texto = s.toString()
-
-                lifecycleScope.launch {
-                    val resultados = withContext(Dispatchers.IO) {
-                        if (texto.isEmpty()) {
-                            productoDao.getAll()
-                        } else {
-                            productoDao.buscar(texto)
-                        }
-                    }
-
-                    adapter.actualizarLista(resultados)
-                }
+                cargarProductosSegunBusqueda(s?.toString().orEmpty())
             }
 
             override fun beforeTextChanged(s: CharSequence?, start: Int, count: Int, after: Int) {}
@@ -107,12 +110,19 @@ class MainActivity : ComponentActivity() {
 
     override fun onResume() {
         super.onResume()
+        cargarProductosSegunBusqueda(etBuscar.text?.toString().orEmpty())
+    }
 
+    private fun cargarProductosSegunBusqueda(texto: String) {
         lifecycleScope.launch {
-            val productos = withContext(Dispatchers.IO) {
-                productoDao.getAll()
+            val resultados = withContext(Dispatchers.IO) {
+                if (texto.isBlank()) {
+                    productoDao.getAll()
+                } else {
+                    productoDao.buscar(texto)
+                }
             }
-            adapter.actualizarLista(productos)
+            adapter.actualizarLista(resultados)
         }
     }
 

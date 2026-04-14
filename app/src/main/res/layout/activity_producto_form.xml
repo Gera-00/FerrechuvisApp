@@ -147,17 +147,36 @@
             android:textSize="16sp"
             android:textStyle="italic" />
 
-        <EditText
-            android:id="@+id/etCodigo"
+        <LinearLayout
             android:layout_width="match_parent"
-            android:layout_height="35dp"
+            android:layout_height="wrap_content"
             android:layout_marginTop="10dp"
-            android:background="@drawable/bg_detalle_input"
-            android:hint="Código / SKU"
-            android:paddingStart="14dp"
-            android:paddingEnd="14dp"
-            android:textSize="16sp"
-            android:textStyle="italic" />
+            android:gravity="center_vertical"
+            android:orientation="horizontal">
+
+            <EditText
+                android:id="@+id/etCodigo"
+                android:layout_width="0dp"
+                android:layout_height="35dp"
+                android:layout_weight="1"
+                android:background="@drawable/bg_detalle_input"
+                android:hint="Código / SKU"
+                android:paddingStart="14dp"
+                android:paddingEnd="14dp"
+                android:textSize="16sp"
+                android:textStyle="italic" />
+
+            <ImageButton
+                android:id="@+id/btnEscanearCodigo"
+                android:layout_width="36dp"
+                android:layout_height="36dp"
+                android:layout_marginStart="8dp"
+                android:background="@android:color/transparent"
+                android:contentDescription="Escanear código"
+                android:padding="4dp"
+                android:scaleType="fitCenter"
+                android:src="@drawable/codigo_de_barras" />
+        </LinearLayout>
 
         <EditText
             android:id="@+id/etPrecio"
