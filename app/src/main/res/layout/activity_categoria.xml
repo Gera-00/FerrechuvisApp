@@ -7,15 +7,15 @@
 
     <ImageButton
         android:id="@+id/btnBack"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
+        android:layout_width="40dp"
+        android:layout_height="40dp"
         android:layout_marginStart="16dp"
-        android:layout_marginTop="10dp"
+        android:layout_marginTop="16dp"
         android:background="@android:color/transparent"
-        android:contentDescription="Atrás"
+        android:contentDescription="Atras"
+        android:padding="8dp"
         android:scaleType="centerInside"
         android:src="@drawable/baseline_arrow_back_ios_24"
-        android:tint="#333333"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent" />
 
@@ -23,18 +23,17 @@
         android:id="@+id/tvTitulo"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
-        android:layout_marginStart="16dp"
+        android:layout_marginStart="12dp"
         android:layout_marginEnd="16dp"
-        android:layout_marginTop="10dp"
-        android:text="Categorías"
+        android:text="Categorias"
+        android:textAlignment="center"
         android:textColor="#333333"
         android:textSize="24sp"
         android:textStyle="bold"
-        android:textAlignment="center"
-        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintBottom_toBottomOf="@id/btnBack"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintTop_toTopOf="parent"
-        app:layout_constraintBottom_toTopOf="@id/containerAgregar" />
+        app:layout_constraintStart_toEndOf="@id/btnBack"
+        app:layout_constraintTop_toTopOf="@id/btnBack" />
 
     <LinearLayout
         android:id="@+id/containerAgregar"
@@ -43,11 +42,10 @@
         android:orientation="horizontal"
         android:padding="16dp"
         android:layout_marginTop="10dp"
-        android:spacing="8dp"
         android:background="#F0F0F0"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/btnBack">
+        app:layout_constraintTop_toBottomOf="@id/tvTitulo">
 
         <EditText
             android:id="@+id/etNuevaCategoria"
